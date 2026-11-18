@@ -191,7 +191,11 @@ static var _PLANE_MODELS: Dictionary = {
 		"bullet_spawn_offset": Vector2(50, -5),
 		"bomb_spawn_offset": Vector2(0, 32),
 		"max_bombs": 0,
-		"visual_scale": Vector2(1.1, 1.1),
+		# Geometry keys (visual_scale, bullet/bomb offsets, collision) must stay
+		# identical to sopwith_camel: the Fokker SVG now sits in the same
+		# 1536x1024 frame as the Camel, so any scale here skews the sprite
+		# against the shared capsule and the (50, -5)/(0, 32) emit points.
+		"visual_scale": Vector2.ONE,
 		"bungee_time": 0.15,
 		"max_landing_tilt_deg": 34.0,
 		"soft_landing_vperp": 40.0,
