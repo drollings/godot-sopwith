@@ -34,6 +34,15 @@ var current_level: int = 1
 ## ammo_depot intact.  Resets to 0 at game start.
 var player_extra_tanks: int = 0
 
+## Player 0's score at the moment the current level began.  Level-completion
+## bonuses award +1 plane per SCORE_BONUS_POINTS earned since this snapshot.
+## Reset in reset_game(); re-snapshotted by main.gd on each level advance.
+var level_start_score: int = 0
+
+## Points scored by player 0 during the current level (never negative).
+func get_level_score() -> int:
+	return maxi(0, get_player_data(0).score - level_start_score)
+
 func get_level_multiplier() -> float:
 	return 1.0 + 0.1 * (current_level - 1)
 
@@ -123,6 +132,7 @@ func reset_game() -> void:
 	game_state = "PLAYING"
 	current_level = 1
 	player_extra_tanks = 0
+	level_start_score = 0
 	for pid in _players:
 		_players[pid] = 0
 	emit_signal("score_changed", 0)

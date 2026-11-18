@@ -48,6 +48,10 @@ const PLAYER_SPAWN_X := 5330.0
 const SAFE_ZONE_RADIUS := 1500.0
 const MIN_ENEMY_DISTANCE := 2458.0
 
+## Completing a level awards +1 spare plane per this many points scored
+## during that level (see _compute_level_bonuses()).
+const SCORE_BONUS_POINTS := 1000
+
 const TITLE_SCENE := preload("res://scenes/title_screen.tscn")
 const GAME_OVER_SCENE := preload("res://scenes/game_over.tscn")
 const PAUSE_MENU_SCENE := preload("res://scenes/pause_menu.tscn")
@@ -1020,6 +1024,8 @@ func _respawn_biplane(avatar_id: int = 0) -> void:
 		_show_game_over()
 
 ## Compute level-completion bonuses without applying them (pure query).
+## +1 plane if half the player's buildings survived, +1 plane per
+## SCORE_BONUS_POINTS scored during the level.
 ## Returns { bonus_planes: int, surviving_tanks: int, bonus_text: String }.
 func _compute_level_bonuses() -> Dictionary:
 	var result := {
@@ -1027,20 +1033,22 @@ func _compute_level_bonuses() -> Dictionary:
 		"surviving_tanks": 0,
 		"bonus_text": "",
 	}
-	if not BuildingRegistry:
-		return result
-	# Player homebase (id=0) always spawns these 6 building types:
-	var player_types := PackedStringArray([
-		"flak_cannon", "hangar", "building",
-		"ammo_depot", "fuel_depot", "machine_gun_nest"])
-	var survived := 0
-	for t in player_types:
-		survived += BuildingRegistry.count(PLAYER_HOMEBASE_ID, t)
-	var hangar_survived := BuildingRegistry.count(PLAYER_HOMEBASE_ID, "hangar") > 0
-	var half_survived := survived >= player_types.size() / 2
+	# Points earned since the level began (score can dip below the snapshot
+	# via crash/cow penalties, so clamp the delta at 0 before dividing).
+	var level_score: int = GameManager.get_level_score() if GameManager else 0
+	var score_bonus := level_score / SCORE_BONUS_POINTS
+	result["bonus_planes"] += score_bonus
+	var half_survived := false
+	if BuildingRegistry:
+		# Player homebase (id=0) always spawns these 6 building types:
+		var player_types := PackedStringArray([
+			"flak_cannon", "hangar", "building",
+			"ammo_depot", "fuel_depot", "machine_gun_nest"])
+		var survived := 0
+		for t in player_types:
+			survived += BuildingRegistry.count(PLAYER_HOMEBASE_ID, t)
+		half_survived = survived >= player_types.size() / 2
 	if half_survived:
-		result["bonus_planes"] += 1
-	if hangar_survived:
 		result["bonus_planes"] += 1
 	# Count surviving player tanks
 	var player_tanks := get_tree().get_nodes_in_group("tank")
@@ -1053,8 +1061,9 @@ func _compute_level_bonuses() -> Dictionary:
 	var lines: PackedStringArray = []
 	if half_survived:
 		lines.append("Friendly buildings survived: +1 Plane")
-	if hangar_survived:
-		lines.append("Friendly hangar survived: +1 Plane")
+	if score_bonus > 0:
+		lines.append("Score bonus (%d pts): +%d Plane%s" % [
+			level_score, score_bonus, "" if score_bonus == 1 else "s"])
 	if result["bonus_planes"] > 0:
 		lines.append("Total Bonus Lives: +%d" % result["bonus_planes"])
 	if result["surviving_tanks"] > 0:
@@ -1087,6 +1096,8 @@ func _on_next_level() -> void:
 	game_state = "PLAYING"
 	if GameManager:
 		GameManager.current_level += 1
+		# The new level's score bonus starts counting from right here.
+		GameManager.level_start_score = GameManager.get_player_data(0).score
 	# --- 3. Compute enemy base count for the NEW level ---
 	# Every 4th level adds a base, up to maximum of 6.
 	var lv := GameManager.current_level if GameManager else 1
