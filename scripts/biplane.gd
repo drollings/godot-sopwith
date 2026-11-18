@@ -190,7 +190,7 @@ static var _PLANE_MODELS: Dictionary = {
 		"rotation_inertia": 5.0,
 		"bullet_spawn_offset": Vector2(50, -5),
 		"bomb_spawn_offset": Vector2(0, 32),
-		"max_bombs": 0,
+		"max_bombs": 2,
 		# Geometry keys (visual_scale, bullet/bomb offsets, collision) must stay
 		# identical to sopwith_camel: the Fokker SVG now sits in the same
 		# 1536x1024 frame as the Camel, so any scale here skews the sprite
