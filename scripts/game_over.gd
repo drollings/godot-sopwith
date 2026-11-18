@@ -146,7 +146,7 @@ func _input(event: InputEvent) -> void:
 	var ke := event as InputEventKey
 	if not ke.pressed or ke.is_echo():
 		return
-	port = get_viewport()
+	var port := get_viewport()
 	match ke.keycode:
 		KEY_ENTER, KEY_SPACE:
 			restart_game.emit()

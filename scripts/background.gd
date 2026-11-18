@@ -14,8 +14,8 @@ const COBALT_ALPS_BASE  := Color(0.10, 0.22, 0.55)
 ## Layer 2 (Mid): Misty transition hills.
 # const MID_MOUNTAIN_CREST := Color(0.10, 0.27, 0.42)
 # const MID_MOUNTAIN_BASE  := Color(0.08, 0.25, 0.38)
-const MID_MOUNTAIN_CREST := Color(0.08, 0.22, 0.28)
-const MID_MOUNTAIN_BASE  := Color(0.12, 0.28, 0.32)
+const MID_MOUNTAIN_CREST := Color(0.07, 0.18, 0.30)
+const MID_MOUNTAIN_BASE  := Color(0.10, 0.22, 0.32)
 
 ## Layer 3 (Nearest): Foreground backdrop hills.
 # const FOREGROUND_HILL_CREST := Color(0.09, 0.30, 0.27)
